@@ -8,12 +8,18 @@ using namespace cv;
 
 Mat src, src_, src_gray;
 Mat dst, detected_edges, dst_threshold;
-int min_r = 0, min_g = 65, min_b = 30; 
+int min_r = 0, min_g = 83, min_b = 30; 
 int max_r = 118, max_g = 135, max_b = 83;
 int lowThreshold = 0;
 const int max_lowThreshold = 255;
 const int ratio_ = 3;
 const int kernel_size = 3;
+int erosion_elem = 0;
+int erosion_size = 2;
+int dilation_elem = 0;
+int dilation_size = 8;
+int const max_elem = 2;
+int const max_kernel_size = 21;
 
 static void CannyThreshold(int, void*)
 {
@@ -21,14 +27,36 @@ static void CannyThreshold(int, void*)
 	Canny(detected_edges, detected_edges, lowThreshold, lowThreshold*ratio_, kernel_size);
 	dst = Scalar::all(0);
 	src.copyTo(dst, detected_edges);
-	imshow("edges", dst);
 }
 static void colorThreshold(int, void*)
 {
 	inRange(src, Scalar(min_r, min_g, min_b), Scalar(max_r, max_g, max_b), src_);
 	src_gray = src_;
-	imshow("SRC", src);
 	imshow("SRC_threshold", src_);
+}
+void Erosion(int, void*)
+{
+	int erosion_type = 0;
+	if (erosion_elem == 0) { erosion_type = MORPH_RECT; }
+	else if (erosion_elem == 1) { erosion_type = MORPH_CROSS; }
+	else if (erosion_elem == 2) { erosion_type = MORPH_ELLIPSE; }
+	Mat element = getStructuringElement(erosion_type,
+		Size(2 * erosion_size + 1, 2 * erosion_size + 1),
+		Point(erosion_size, erosion_size));
+	erode(src_, src_, element);
+	imshow("Erosion", src_);
+}
+void Dilation(int, void*)
+{
+	int dilation_type = 0;
+	if (dilation_elem == 0) { dilation_type = MORPH_RECT; }
+	else if (dilation_elem == 1) { dilation_type = MORPH_CROSS; }
+	else if (dilation_elem == 2) { dilation_type = MORPH_ELLIPSE; }
+	Mat element = getStructuringElement(dilation_type,
+		Size(2 * dilation_size + 1, 2 * dilation_size + 1),
+		Point(dilation_size, dilation_size));
+	dilate(src_, src_, element);
+	imshow("Dilation", src_);
 }
 
 int main(int, char**)
@@ -67,8 +95,26 @@ int main(int, char**)
 		
 		colorThreshold(0, 0);
 		//cvtColor(src_, src_gray, COLOR_BGR2GRAY);
+		namedWindow("Erosion Demo", WINDOW_AUTOSIZE);
+		namedWindow("Dilation Demo", WINDOW_AUTOSIZE);
+		moveWindow("Dilation Demo", src.cols, 0);
+		createTrackbar("Element:\n 0: Rect \n 1: Cross \n 2: Ellipse", "Erosion Demo",
+			&erosion_elem, max_elem,
+			Erosion);
+		createTrackbar("Kernel size:\n 2n +1", "Erosion Demo",
+			&erosion_size, max_kernel_size,
+			Erosion);
+		createTrackbar("Element:\n 0: Rect \n 1: Cross \n 2: Ellipse", "Dilation Demo",
+			&dilation_elem, max_elem,
+			Dilation);
+		createTrackbar("Kernel size:\n 2n +1", "Dilation Demo",
+			&dilation_size, max_kernel_size,
+			Dilation);
+		Erosion(0, 0);
+		Dilation(0, 0);
 		CannyThreshold(0, 0);
-		
+
+		imshow("RESULT", src + dst);
 		if (waitKey(30) >= 0) break;
 	}
 	// the camera will be deinitialized automatically in VideoCapture destructor
