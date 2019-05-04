@@ -1,0 +1,3 @@
+﻿  pch.cpp
+  ML_image_processing.cpp
+c:\users\antho\documents\github\opencv_visual_recognition\ml_image_processing\ml_image_processing\ml_image_processing.cpp(4): fatal error C1083: Cannot open include file: 'opencv2/opencv.hpp': No such file or directory
