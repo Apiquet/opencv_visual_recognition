@@ -6,20 +6,12 @@
 using namespace std;
 using namespace cv;
 
-Mat src, src_, src_gray, drawing;
-Mat dst, detected_edges, dst_threshold;
+Mat src, src_gray, dilatation_result, drawing;
 int min_r = 229, min_g = 239, min_b = 0;
 int max_r = 255, max_g = 255, max_b = 229;
 int lowThreshold = 0;
-const int max_lowThreshold = 255;
-const int ratio_ = 3;
-const int kernel_size = 3;
-int erosion_elem = 0;
-int erosion_size = 2;
 int dilation_elem = 0;
-int dilation_size = 18;
-int const max_elem = 2;
-int const max_kernel_size = 21;
+int dilation_size = 30;
 
 int thresh = 100;
 int max_thresh = 255;
@@ -27,7 +19,7 @@ RNG rng(12345);
 static void colorThreshold(int, void*)
 {
 	inRange(src, Scalar(min_r, min_g, min_b), Scalar(max_r, max_g, max_b), src_gray);
-	//imshow("SRC_threshold", src_gray);
+	imshow("SRC_threshold", src_gray);
 }
 void thresh_callback(int, void*)
 {
@@ -55,9 +47,23 @@ void thresh_callback(int, void*)
 	}
 	//imshow("Contours", drawing);
 }
+
+void Dilation(int, void*)
+{
+	int dilation_type = 0;
+	if (dilation_elem == 0) { dilation_type = MORPH_RECT; }
+	else if (dilation_elem == 1) { dilation_type = MORPH_CROSS; }
+	else if (dilation_elem == 2) { dilation_type = MORPH_ELLIPSE; }
+	Mat element = getStructuringElement(dilation_type,
+		Size(2 * dilation_size + 1, 2 * dilation_size + 1),
+		Point(dilation_size, dilation_size));
+	dilate(src_gray, dilatation_result, element);
+	//imshow("Dilation", src_);
+}
+
 int main(int, char**)
 {
-	VideoCapture cap(1); // open the default camera
+	VideoCapture cap(0); // open the default camera
 	if (!cap.isOpened())  // check if we succeeded
 		return -1;
 
@@ -85,6 +91,13 @@ int main(int, char**)
 		//cv::imshow("dstImage", dstImage);
 		cv::imshow("dstImage", src + drawing);
 
+
+		Dilation(0, 0);
+		//Define your destination image
+		cv::Mat ImageWithMask = cv::Mat::zeros(src.size(), src.type());
+		//Now you can copy your source image to destination image with masking
+		src.copyTo(ImageWithMask, dilatation_result);
+		cv::imshow("ImageWithMask", ImageWithMask);
 		if (waitKey(30) >= 0) break;
 	}
 	// the camera will be deinitialized automatically in VideoCapture destructor
