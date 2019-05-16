@@ -69,6 +69,7 @@ int main(int, char**)
 
 	while (true) {
 
+
 		cap >> src; // get a new frame from camera
 		//cvtColor(frame, edges, COLOR_BGR2GRAY);
 		//GaussianBlur(frame, edges, Size(7, 7), 2000, 2000);
@@ -98,7 +99,11 @@ int main(int, char**)
 		//Now you can copy your source image to destination image with masking
 		src.copyTo(ImageWithMask, dilatation_result);
 		cv::imshow("ImageWithMask", ImageWithMask);
-		if (waitKey(30) >= 0) break;
+		
+		
+
+		waitKey(0);
+		//if (waitKey(30) >= 0) break;
 	}
 	// the camera will be deinitialized automatically in VideoCapture destructor
 	return 0;

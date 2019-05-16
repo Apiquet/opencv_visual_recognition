@@ -151,7 +151,7 @@ void thresh_callback(int, void*)
 }
 int main(int, char**)
 {
-	VideoCapture cap(1); // open the default camera
+	VideoCapture cap(0); // open the default camera
 	if (!cap.isOpened())  // check if we succeeded
 		return -1;
 
